@@ -10,7 +10,7 @@ public class Collatz {
             return n;
         }else if(n%2==0)
         {
-            return n/4;
+            return n/2;
         }else{
             return 3*n + 1;
         }
