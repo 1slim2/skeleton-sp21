@@ -93,7 +93,48 @@ public class Model extends Observable {
         checkGameOver();
         setChanged();
     }
-
+    public int desiredrow(int i, int j, int[] f){
+        int k,m = i,n = j;
+        int r=n;
+        for(k=n+1;k<board.size();k++){
+            if(board.tile(m,k)==null){
+                r = r+1;
+                continue;
+            }
+            if(board.tile(m,k).value() == board.tile(i,j).value() && f[k]==0){
+                r = k;
+                break;
+            }
+            if(board.tile(m,k).value()!=board.tile(i,j).value() || (board.tile(m,k).value() == board.tile(i,j).value()&&f[j] == 1)){
+                break;
+            }
+        }
+        return r;
+}
+    public boolean singlecol(int i){
+        int r=0,j;
+        int[] f = new int[board.size()];
+        for(j = 0; j<board.size();j++){
+            f[j]=0;
+        }
+        boolean flag = false;
+        for(j=board.size()-2;j>=0;j--){
+            if(board.tile(i,j)==null){
+                continue;
+            }else{
+                r = desiredrow(i,j, f);
+            }
+            if(r!=j){
+                if(board.tile(i,r)!=null){
+                    f[r] = 1;
+                    score = score + board.tile(i,r).value()*2;
+                }
+                board.move(i,r,board.tile(i,j));
+                flag = true;
+            }
+        }
+        return flag;
+    }
     /** Tilt the board toward SIDE. Return true iff this changes the board.
      *
      * 1. If two Tile objects are adjacent in the direction of motion and have
@@ -109,11 +150,18 @@ public class Model extends Observable {
     public boolean tilt(Side side) {
         boolean changed;
         changed = false;
-
+        int i;
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
-
+        board.setViewingPerspective(side);
+        for(i=0;i<board.size();i++)
+        {
+            if(singlecol(i)){
+                changed = true;
+            }
+        }
+        board.setViewingPerspective(Side.NORTH);
         checkGameOver();
         if (changed) {
             setChanged();
@@ -138,6 +186,16 @@ public class Model extends Observable {
      * */
     public static boolean emptySpaceExists(Board b) {
         // TODO: Fill in this function.
+        int i,j;
+        for(i=0;i<b.size();i++)
+        {
+            for(j=0;j<b.size();j++)
+            {
+                if(b.tile(i,j) == null){
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -148,9 +206,46 @@ public class Model extends Observable {
      */
     public static boolean maxTileExists(Board b) {
         // TODO: Fill in this function.
+        int i,j;
+        for(i=0;i<b.size();i++)
+        {
+            for(j=0;j<b.size();j++)
+            {
+                if(b.tile(i,j)!=null){
+                if(b.tile(i,j).value()==MAX_PIECE){
+                    return true;
+                }}
+            }
+        }
         return false;
     }
-
+public static boolean equalvalueexists(Board b)
+{
+    int i,j;
+    for(i=0;i<b.size();i++){
+        for(j=0;j<b.size();j++){
+            if(i-1>=0) {
+                if (b.tile(i, j).value() == b.tile(i - 1, j).value()) {
+                    return true;
+                }
+            }
+            if(i+1<b.size()){
+                if(b.tile(i,j).value() == b.tile(i+1,j).value()) {
+                return true;}
+                }
+            if(j-1>=0) {
+            if(b.tile(i,j).value()==b.tile(i,j-1).value()) {
+            return true;}
+            }
+            if(j+1<b.size()) {
+            if(b.tile(i,j).value()==b.tile(i,j+1).value()){
+                return true;
+            }
+            }
+            }
+            }
+    return false;
+}
     /**
      * Returns true if there are any valid moves on the board.
      * There are two ways that there can be valid moves:
@@ -159,6 +254,12 @@ public class Model extends Observable {
      */
     public static boolean atLeastOneMoveExists(Board b) {
         // TODO: Fill in this function.
+        if(emptySpaceExists(b)){
+            return true;
+        }
+        if(equalvalueexists(b)) {
+            return true;
+        }
         return false;
     }
 
